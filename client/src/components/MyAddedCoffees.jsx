@@ -1,8 +1,9 @@
+import React from "react";
 import { useState } from "react";
 import { useLoaderData } from "react-router";
 import CoffeeCard from "./CoffeeCard";
 
-const Home = () => {
+const MyAddedCoffees = () => {
   const data = useLoaderData();
   const [coffees, setCoffees] = useState(data?.data || []);
 
@@ -18,4 +19,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default MyAddedCoffees;

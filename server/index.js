@@ -1,7 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const port = process.env.PORT || 3000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 const app = express();
 
@@ -34,6 +34,24 @@ async function run() {
       const result = await coffeeCollection.insertOne(coffeeData);
       console.log(result);
       res.status(201).send({ ...result, message: "got the data" });
+    });
+
+    // get single coffee by id
+    app.get("/coffee/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const coffee = await coffeeCollection.findOne(filter);
+      console.groupCollapsed(coffee);
+      res.send(coffee);
+    });
+
+    // get single coffee by id
+    app.get("/my-coffees/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { email };
+      const coffees = await coffeeCollection.find(filter).toArray();
+      console.groupCollapsed(coffees);
+      res.send(coffees);
     });
 
     // Connect the client to the server	(optional starting in v4.7)
