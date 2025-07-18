@@ -3,6 +3,7 @@ import { use } from "react";
 import { useLoaderData } from "react-router";
 import { AuthContext } from "../contexts/AuthContext";
 import { useState } from "react";
+import axios from "axios";
 
 const CoffeeDetails = () => {
   const { user } = use(AuthContext);
@@ -25,22 +26,34 @@ const CoffeeDetails = () => {
   // handle like/dislike
   const handleLike = () => {
     if (!user?.email === email) return alert("You don't have any shame?!");
-    if (!user?.email) {
-      alert("Please login to like this coffee.");
-      return;
-    }
+    // handle like toggle api fetch call
+    axios
+      .patch(`${import.meta.env.VITE_API_URL}/like/${_id}`, {
+        email: user?.email,
+      })
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
-    if (liked) {
-      // If already liked, remove the user from likedBy
-      setLikeCount(likeCount - 1);
-      setLiked(false);
-      // Here you would also update the backend to remove the user from likedBy
-    } else {
-      // If not liked, add the user to likedBy
-      setLikeCount(likeCount + 1);
-      setLiked(true);
-      // Here you would also update the backend to add the user to likedBy
-    }
+    // if (!user?.email) {
+    //   alert("Please login to like this coffee.");
+    //   return;
+    // }
+
+    // if (liked) {
+    //   // If already liked, remove the user from likedBy
+    //   setLikeCount(likeCount - 1);
+    //   setLiked(false);
+    //   // Here you would also update the backend to remove the user from likedBy
+    // } else {
+    //   // If not liked, add the user to likedBy
+    //   setLikeCount(likeCount + 1);
+    //   setLiked(true);
+    //   // Here you would also update the backend to add the user to likedBy
+    // }
   };
 
   return (

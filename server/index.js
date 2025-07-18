@@ -45,13 +45,38 @@ async function run() {
       res.send(coffee);
     });
 
-    // get single coffee by id
     app.get("/my-coffees/:email", async (req, res) => {
       const email = req.params.email;
       const filter = { email };
       const coffees = await coffeeCollection.find(filter).toArray();
       console.groupCollapsed(coffees);
       res.send(coffees);
+    });
+
+    // handle like toggle
+    app.patch("/like/:coffeeId", async (req, res) => {
+      const id = req.params.coffeeId;
+      const email = req.body.email;
+      const filter = { _id: new ObjectId(id) };
+      const coffee = await coffeeCollection.findOne(filter);
+      // check if the user have already liked the coffee or not
+      const alreadyLiked = coffee?.likedBy.includes(email);
+      const updateDoc = alreadyLiked
+        ? {
+            $pull: { likedBy: email },
+            // dislike (pops email form array)
+          }
+        : {
+            // : { $push: { likedBy: email } };
+            // this can push one email multiple times
+            $addToSet: { likedBy: email },
+            // like (pushes email into array)
+          };
+      const result = await coffeeCollection.updateOne(filter, updateDoc);
+      res.send({
+        message: alreadyLiked ? "Dislike successful" : "Like successful",
+        liked: !alreadyLiked,
+      });
     });
 
     // Connect the client to the server	(optional starting in v4.7)
