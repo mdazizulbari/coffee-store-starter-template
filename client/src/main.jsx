@@ -26,18 +26,30 @@ const router = createBrowserRouter([
       },
       {
         path: "addCoffee",
-        Component: AddCoffee,
+        element: (
+          <PrivateRoute>
+            <AddCoffee />
+          </PrivateRoute>
+        ),
       },
       {
         path: "coffee/:id",
         loader: ({ params }) =>
           axios(`${import.meta.env.VITE_API_URL}/coffee/${params.id}`),
-        Component: CoffeeDetails,
+        element: (
+          <PrivateRoute>
+            <CoffeeDetails />
+          </PrivateRoute>
+        ),
       },
       {
         path: "updateCoffee/:id",
 
-        Component: UpdateCoffee,
+        element: (
+          <PrivateRoute>
+            <UpdateCoffee />
+          </PrivateRoute>
+        ),
       },
       {
         path: "signin",

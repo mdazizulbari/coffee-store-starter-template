@@ -21,6 +21,7 @@ async function run() {
   try {
     const database = client.db("conceptual-coffeeDB");
     const coffeeCollection = database.collection("coffees");
+    const orderCollection = database.collection("orders");
 
     app.get("/coffees", async (req, res) => {
       const allCoffees = await coffeeCollection.find().toArray();
@@ -31,6 +32,8 @@ async function run() {
     // save a coffee data in database
     app.post("/add-coffee", async (req, res) => {
       const coffeeData = req.body;
+      const quantity = coffeeData.quantity;
+      coffeeData.quantity = Number(quantity);
       const result = await coffeeCollection.insertOne(coffeeData);
       console.log(result);
       res.status(201).send({ ...result, message: "got the data" });
@@ -77,6 +80,24 @@ async function run() {
         message: alreadyLiked ? "Dislike successful" : "Like successful",
         liked: !alreadyLiked,
       });
+    });
+
+    // handle order
+    // save a coffee data in database
+    app.post("/place-order/:coffeeId", async (req, res) => {
+      const id = req.params.coffeeId;
+      const orderData = req.body;
+      const result = await orderCollection.insertOne(orderData);
+      if (result.acknowledged) {
+        // update quantity from coffee collection
+        await coffeeCollection.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $inc: { quantity: -1 },
+          }
+        );
+      }
+      res.status(201).send({ result });
     });
 
     // Connect the client to the server	(optional starting in v4.7)

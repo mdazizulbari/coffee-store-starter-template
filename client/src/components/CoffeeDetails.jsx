@@ -4,25 +4,34 @@ import { useLoaderData } from "react-router";
 import { AuthContext } from "../contexts/AuthContext";
 import { useState } from "react";
 import axios from "axios";
+import { useEffect } from "react";
 
 const CoffeeDetails = () => {
   const { user } = use(AuthContext);
-  const { data: coffee } = useLoaderData();
+  const [liked, setLiked] = useState(likedBy.includes(false));
+  const [likeCount, setLikeCount] = useState(likedBy.length);
+  const { data } = useLoaderData();
+  // this data always comes first, so there is no need to use useEffect to make sure that the data is available
+  const [coffee, setCoffee] = useState(data);
+
   const {
     name,
     photo,
-    supplier,
     details,
-    taste,
-    price,
-    quantity,
     _id,
     email,
     likedBy,
+    // supplier,
+    // taste,
+    // price,
+    quantity,
   } = coffee || {};
 
-  const [liked, setLiked] = useState(likedBy.includes(user?.email));
-  const [likeCount, setLikeCount] = useState(likedBy.length);
+  // if the user takes time to load, we can use the below shown way
+  useEffect(() => {
+    setLiked(likedBy.includes(user?.email));
+  }, [user, likedBy]);
+
   // handle like/dislike
   const handleLike = () => {
     if (!user?.email === email) return alert("You don't have any shame?!");
@@ -33,27 +42,27 @@ const CoffeeDetails = () => {
       })
       .then((data) => {
         console.log(data);
+        const isLiked = data?.data?.liked;
+        setLiked(isLiked);
+        setLikeCount((prev) => (isLiked ? prev + 1 : prev - 1));
       })
       .catch((error) => {
         console.log(error);
       });
+  };
 
-    // if (!user?.email) {
-    //   alert("Please login to like this coffee.");
-    //   return;
-    // }
-
-    // if (liked) {
-    //   // If already liked, remove the user from likedBy
-    //   setLikeCount(likeCount - 1);
-    //   setLiked(false);
-    //   // Here you would also update the backend to remove the user from likedBy
-    // } else {
-    //   // If not liked, add the user to likedBy
-    //   setLikeCount(likeCount + 1);
-    //   setLiked(true);
-    //   // Here you would also update the backend to add the user to likedBy
-    // }
+  const handleOrder = () => {
+    if (user?.email === email) return alert("It's your own coffee");
+    const orderInfo = {
+      coffeeId: _id,
+      customerEmail: user?.email,
+    };
+    // save order ifo in db
+    axios
+      .post(`${import.meta.env.VITE_API_URL}/place-order/${_id}`, orderInfo)
+      .then((data) => {
+        console.log(data);
+      });
   };
 
   return (
@@ -65,12 +74,15 @@ const CoffeeDetails = () => {
         <div className="flex-1">
           <p>Name: {name}</p>
           <p>Details: {details}</p>
+          <p>Quantity: {quantity}</p>
           <p>Likes: {likeCount}</p>
 
           <div className="flex gap-4 ">
-            <button className="btn btn-primary">Order</button>
+            <button onClick={handleOrder} className="btn btn-primary">
+              Order
+            </button>
             <button onClick={handleLike} className="btn btn-secondary">
-              Like
+              👍 {liked ? "Liked" : "Like"}
             </button>
           </div>
         </div>
