@@ -8,12 +8,9 @@ import { useEffect } from "react";
 
 const CoffeeDetails = () => {
   const { user } = use(AuthContext);
-  const [liked, setLiked] = useState(likedBy.includes(false));
-  const [likeCount, setLikeCount] = useState(likedBy.length);
   const { data } = useLoaderData();
   // this data always comes first, so there is no need to use useEffect to make sure that the data is available
   const [coffee, setCoffee] = useState(data);
-
   const {
     name,
     photo,
@@ -26,6 +23,8 @@ const CoffeeDetails = () => {
     // price,
     quantity,
   } = coffee || {};
+  const [liked, setLiked] = useState(likedBy.includes(false));
+  const [likeCount, setLikeCount] = useState(likedBy.length);
 
   // if the user takes time to load, we can use the below shown way
   useEffect(() => {
@@ -62,6 +61,9 @@ const CoffeeDetails = () => {
       .post(`${import.meta.env.VITE_API_URL}/place-order/${_id}`, orderInfo)
       .then((data) => {
         console.log(data);
+        setCoffee((prev) => {
+          return { ...prev, quantity: prev.quantity - 1 };
+        });
       });
   };
 

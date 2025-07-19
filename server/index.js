@@ -99,6 +99,24 @@ async function run() {
       }
       res.status(201).send({ result });
     });
+    // get all orders by customer email
+    app.get("/my-orders/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { customerEmail: email };
+      const allOrders = await orderCollection.find(filter).toArray();
+      for (const order of allOrders) {
+        const orderId = order.coffeeId;
+        const fullCoffeeData = await coffeeCollection.findOne({
+          _id: new ObjectId(orderId),
+        });
+        order.name = fullCoffeeData.name;
+        order.photo = fullCoffeeData.photo;
+        order.price = fullCoffeeData.price;
+        order.quantity = fullCoffeeData.quantity;
+      }
+      console.log(allOrders);
+      res.send(allOrders);
+    });
 
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
