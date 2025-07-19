@@ -26,9 +26,10 @@ async function run() {
 
     // generate jwt token
     app.post("/jwt", (req, res) => {
+      // user is payload/data
       const user = { email: req.body.email };
 
-      // token creation
+      // token creation (payload/data encode)
       const token = jwt.sign(user, process.env.JWT_SECRET_KEY, {
         expiresIn: "7d",
       });
@@ -37,7 +38,7 @@ async function run() {
 
     app.get("/coffees", async (req, res) => {
       const allCoffees = await coffeeCollection.find().toArray();
-      console.log(allCoffees);
+      // console.log(allCoffees);
       res.send(allCoffees);
     });
 
@@ -47,7 +48,7 @@ async function run() {
       const quantity = coffeeData.quantity;
       coffeeData.quantity = Number(quantity);
       const result = await coffeeCollection.insertOne(coffeeData);
-      console.log(result);
+      // console.log(result);
       res.status(201).send({ ...result, message: "got the data" });
     });
 
@@ -56,7 +57,7 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const coffee = await coffeeCollection.findOne(filter);
-      console.groupCollapsed(coffee);
+      // console.groupCollapsed(coffee);
       res.send(coffee);
     });
 
@@ -64,7 +65,7 @@ async function run() {
       const email = req.params.email;
       const filter = { email };
       const coffees = await coffeeCollection.find(filter).toArray();
-      console.groupCollapsed(coffees);
+      // console.groupCollapsed(coffees);
       res.send(coffees);
     });
 
@@ -113,6 +114,21 @@ async function run() {
     });
     // get all orders by customer email
     app.get("/my-orders/:email", async (req, res) => {
+      const token = req?.headers?.authorization?.split(" ")[1];
+      // console.log(token);
+      if (token) {
+        jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+          if (err) {
+            console.log("error---------->", err);
+          }
+          if (decoded) {
+            console.log(decoded);
+          }
+        });
+      } else {
+        return res.send({message: "who the fuck are you"})
+      }
+
       const email = req.params.email;
       const filter = { customerEmail: email };
       const allOrders = await orderCollection.find(filter).toArray();
@@ -126,7 +142,7 @@ async function run() {
         order.price = fullCoffeeData.price;
         order.quantity = fullCoffeeData.quantity;
       }
-      console.log(allOrders);
+      // console.log(allOrders);
       res.send(allOrders);
     });
 
