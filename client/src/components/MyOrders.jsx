@@ -15,8 +15,8 @@ const MyOrders = () => {
   useEffect(() => {
     axiosSecure(`/my-orders/${user?.email}`)
       .then((data) => {
-        console.log(data);
-        setOrders(data);
+        console.log(data?.data);
+        setOrders(data?.data);
       })
       .catch((error) => {
         console.log(error);
@@ -25,14 +25,12 @@ const MyOrders = () => {
 
   return (
     <div>
-      {orders.map((order) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-12">
-          {/* Coffee Cards */}
-          {orders.map((coffee) => (
-            <OrderCard key={coffee._id} coffee={coffee} />
-          ))}
-        </div>
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-12">
+        {/* Coffee Cards */}
+        {orders.map((coffee) => (
+          <OrderCard key={coffee._id} coffee={coffee} />
+        ))}
+      </div>
     </div>
   );
 };
