@@ -18,6 +18,24 @@ const client = new MongoClient(process.env.MONGODB_URI, {
     deprecationErrors: true,
   },
 });
+
+// jwt middleware
+const verifyJWT = (req, res, next) => {
+  const token = req?.headers?.authorization?.split(" ")[1];
+  if (!token) return res.status(401).send({ message: "Unauthorized Access!" });
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+    if (err) {
+      console.log(err);
+      return res.status(401).send({ message: "Unauthorized Access!" });
+    }
+    if (decoded) {
+      console.log(decoded);
+    }
+    req.tokenEmail = decoded.email;
+    next();
+  });
+};
+
 async function run() {
   try {
     const database = client.db("conceptual-coffeeDB");
@@ -113,23 +131,29 @@ async function run() {
       res.status(201).send({ result });
     });
     // get all orders by customer email
-    app.get("/my-orders/:email", async (req, res) => {
-      const token = req?.headers?.authorization?.split(" ")[1];
-      // console.log(token);
-      if (token) {
-        jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
-          if (err) {
-            console.log("error---------->", err);
-          }
-          if (decoded) {
-            console.log(decoded);
-          }
-        });
-      } else {
-        return res.send({message: "who the fuck are you"})
+    app.get("/my-orders/:email", verifyJWT, async (req, res) => {
+      // const token = req?.headers?.authorization?.split(" ")[1];
+      // if (token) {
+      //   jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+      //     if (err) {
+      //       console.log("error---------->", err);
+      //     }
+      //     if (decoded) {
+      //       console.log(decoded);
+      //     }
+      //   });
+      // } else {
+      //   return res.send({message: "who the fuck are you"})
+      // }
+      const decodedEmail = req.tokenEmail;
+      const email = req.params.email;
+      console.log(decodedEmail);
+      console.log(email);
+
+      if (decodedEmail !== email) {
+        return res.status(403).send({ message: "Forbidden Access!" });
       }
 
-      const email = req.params.email;
       const filter = { customerEmail: email };
       const allOrders = await orderCollection.find(filter).toArray();
       for (const order of allOrders) {
