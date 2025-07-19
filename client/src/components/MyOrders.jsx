@@ -5,26 +5,23 @@ import { useEffect } from "react";
 import { useState } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import OrderCard from "./OrderCard";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const MyOrders = () => {
   const { user } = use(AuthContext);
   const [orders, setOrders] = useState([]);
+  const axiosSecure = useAxiosSecure();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    axios(`${import.meta.env.VITE_API_URL}/my-orders/${user?.email}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    axiosSecure(`/my-orders/${user?.email}`)
       .then((data) => {
-        console.log(data?.data);
-        setOrders(data?.data);
+        console.log(data);
+        setOrders(data);
       })
       .catch((error) => {
         console.log(error);
       });
-  }, [user]);
+  }, [user, axiosSecure]);
 
   return (
     <div>

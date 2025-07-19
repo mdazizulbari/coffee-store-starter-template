@@ -32,6 +32,8 @@ const AuthProvider = ({ children }) => {
   };
 
   const logOut = () => {
+    localStorage.removeItem("token");
+    // incase the useEffect is slow while logging out
     return signOut(auth);
   };
 
@@ -51,6 +53,8 @@ const AuthProvider = ({ children }) => {
           .catch((error) => {
             console.log(error);
           });
+      } else {
+        localStorage.removeItem("token");
       }
       setLoading(false);
     });

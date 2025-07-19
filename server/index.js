@@ -147,8 +147,6 @@ async function run() {
       // }
       const decodedEmail = req.tokenEmail;
       const email = req.params.email;
-      console.log(decodedEmail);
-      console.log(email);
 
       if (decodedEmail !== email) {
         return res.status(403).send({ message: "Forbidden Access!" });
