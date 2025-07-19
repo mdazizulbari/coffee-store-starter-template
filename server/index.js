@@ -1,5 +1,6 @@
 const express = require("express");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 3000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
@@ -22,6 +23,17 @@ async function run() {
     const database = client.db("conceptual-coffeeDB");
     const coffeeCollection = database.collection("coffees");
     const orderCollection = database.collection("orders");
+
+    // generate jwt token
+    app.post("/jwt", (req, res) => {
+      const user = { email: req.body.email };
+
+      // token creation
+      const token = jwt.sign(user, process.env.JWT_SECRET_KEY, {
+        expiresIn: "7d",
+      });
+      res.send({ token, message: "JWT created successfully" });
+    });
 
     app.get("/coffees", async (req, res) => {
       const allCoffees = await coffeeCollection.find().toArray();

@@ -9,9 +9,14 @@ import OrderCard from "./OrderCard";
 const MyOrders = () => {
   const { user } = use(AuthContext);
   const [orders, setOrders] = useState([]);
-    
+
   useEffect(() => {
-    axios(`${import.meta.env.VITE_API_URL}/my-orders/${user?.email}`)
+    const token = localStorage.getItem("token");
+    axios(`${import.meta.env.VITE_API_URL}/my-orders/${user?.email}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((data) => {
         console.log(data?.data);
         setOrders(data?.data);
@@ -24,12 +29,12 @@ const MyOrders = () => {
   return (
     <div>
       {orders.map((order) => (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-12">
-        {/* Coffee Cards */}
-        {orders.map((coffee) => (
-          <OrderCard key={coffee._id} coffee={coffee} />
-        ))}
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-12">
+          {/* Coffee Cards */}
+          {orders.map((coffee) => (
+            <OrderCard key={coffee._id} coffee={coffee} />
+          ))}
+        </div>
       ))}
     </div>
   );
