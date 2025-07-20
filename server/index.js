@@ -4,11 +4,22 @@ const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 3000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const app = express();
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    // below two lines for cookie method
+    origin: ["http://localhost:5173", "http://liveSite.com"],
+    credentials: true,
+  })
+);
+// to make the server be able to read data in normal o language
+// server can only read json formats
 app.use(express.json());
+// to make the server be able to read data in cookie's language
+app.use(cookieParser());
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(process.env.MONGODB_URI, {
@@ -21,7 +32,10 @@ const client = new MongoClient(process.env.MONGODB_URI, {
 
 // jwt middleware
 const verifyJWT = (req, res, next) => {
-  const token = req?.headers?.authorization?.split(" ")[1];
+  // to read from localstorage
+  // const token = req?.headers?.authorization?.split(" ")[1];
+  // to read from cookie
+  const token = req?.header?.cookies;
   if (!token) return res.status(401).send({ message: "Unauthorized Access!" });
   jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
     if (err) {
@@ -51,7 +65,15 @@ async function run() {
       const token = jwt.sign(user, process.env.JWT_SECRET_KEY, {
         expiresIn: "7d",
       });
-      res.send({ token, message: "JWT created successfully" });
+
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+        })
+        .send({ message: "JWT created successfully" });
+      // send token in response for localStorage method
+      // res.send({ token, message: "JWT created successfully" });
     });
 
     app.get("/coffees", async (req, res) => {

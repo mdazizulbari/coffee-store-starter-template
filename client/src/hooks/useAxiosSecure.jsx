@@ -6,13 +6,17 @@ const useAxiosSecure = () => {
   const { logOut } = use(AuthContext);
   const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
+    // intercept or send cookie data to serer
+    withCredentials: true,
   });
-  //   intercept requests
-  const token = localStorage.getItem("token");
-  axiosInstance.interceptors.request.use((config) => {
-    config.headers.Authorization = `Bearer ${token}`;
-    return config;
-  });
+
+  //   intercept requests for localstorage
+  // const token = localStorage.getItem("token");
+  // axiosInstance.interceptors.request.use((config) => {
+  //   config.headers.Authorization = `Bearer ${token}`;
+  //   return config;
+  // });
+
   //   intercept response
   axiosInstance.interceptors.response.use(
     (res) => res,

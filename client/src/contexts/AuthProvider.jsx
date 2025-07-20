@@ -44,11 +44,18 @@ const AuthProvider = ({ children }) => {
       // api end-point: /jwt (post method)
       if (currentUser?.email) {
         axios
-          .post(`${import.meta.env.VITE_API_URL}/jwt`, {
-            email: currentUser.email,
-          })
+          .post(
+            `${import.meta.env.VITE_API_URL}/jwt`,
+            {
+              email: currentUser.email,
+            },
+            // mandatory to store token in browser cookie
+            { withCredentials: true }
+          )
           .then((res) => {
-            localStorage.setItem("token", res.data.token);
+            console.log(res.data);
+            // to store in localStorage
+            // localStorage.setItem("token", res.data.token);
           })
           .catch((error) => {
             console.log(error);
