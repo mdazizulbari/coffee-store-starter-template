@@ -21,7 +21,7 @@ const MyOrders = () => {
       .catch((error) => {
         console.log(error);
       });
-  }, [user, axiosSecure]);
+  }, [user?.email, axiosSecure]);
 
   return (
     <div>

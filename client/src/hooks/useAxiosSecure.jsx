@@ -3,11 +3,22 @@ import { use } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
 const useAxiosSecure = () => {
-  const { logOut } = use(AuthContext);
+  const { user, logOut } = use(AuthContext);
+  // token for local storage
+  // const token= localStorage.getItem('token')
+
+  // token for firebase jwt
+  const token = user?.accessToken;
   const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     // intercept or send cookie data to serer
     withCredentials: true,
+  });
+
+  // intercept requests for firebase jwt
+  axiosInstance.interceptors.request.use((config) => {
+    config.headers.Authorization = `Bearer ${token}`;
+    return config;
   });
 
   //   intercept requests for localstorage
@@ -17,7 +28,7 @@ const useAxiosSecure = () => {
   //   return config;
   // });
 
-  //   intercept response
+  //   intercept response for localstorage and firebase
   axiosInstance.interceptors.response.use(
     (res) => res,
     (err) => {

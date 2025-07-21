@@ -7,6 +7,17 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const app = express();
 
+// using firebase for jwt
+const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString(
+  "utf8"
+);
+var serviceAccount = JSON.parse(decoded);
+var admin = require("firebase-admin");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+const { getAuth } = require("firebase-admin/auth");
+
 // middleware
 app.use(
   cors({
@@ -31,23 +42,37 @@ const client = new MongoClient(process.env.MONGODB_URI, {
 });
 
 // jwt middleware
-const verifyJWT = (req, res, next) => {
-  // to read from localstorage
-  // const token = req?.headers?.authorization?.split(" ")[1];
+const verifyJWT = async (req, res, next) => {
+  // to read from localstorage and firebase
+  const token = req?.headers?.authorization?.split(" ")[1];
   // to read from cookie
-  const token = req?.header?.cookies;
+  // const token = req?.header?.cookies;
+  console.log("Token:", token);
   if (!token) return res.status(401).send({ message: "Unauthorized Access!" });
-  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
-    if (err) {
-      console.log(err);
-      return res.status(401).send({ message: "Unauthorized Access!" });
-    }
-    if (decoded) {
-      console.log(decoded);
-    }
+
+  // verify token using firebase-admin-sdk
+  try {
+    const decoded = await getAuth().verifyIdToken(token);
+    console.log("Decoded token", decoded);
     req.tokenEmail = decoded.email;
     next();
-  });
+  } catch (error) {
+    console.log(error);
+    return res.status(401).send({ message: "Unauthorized Access!" });
+  }
+
+  // to verify token from localstorage
+  // jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+  //   if (err) {
+  //     console.log(err);
+  //     return res.status(401).send({ message: "Unauthorized Access!" });
+  //   }
+  //   if (decoded) {
+  //     console.log(decoded);
+  //   }
+  //   req.tokenEmail = decoded.email;
+  //   next();
+  // });
 };
 
 async function run() {

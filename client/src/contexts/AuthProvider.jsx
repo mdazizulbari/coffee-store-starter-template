@@ -47,7 +47,7 @@ const AuthProvider = ({ children }) => {
           .post(
             `${import.meta.env.VITE_API_URL}/jwt`,
             {
-              email: currentUser.email,
+              email: currentUser?.email,
             },
             // mandatory to store token in browser cookie
             { withCredentials: true }
